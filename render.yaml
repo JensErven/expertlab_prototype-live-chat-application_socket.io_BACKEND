@@ -1,0 +1,5 @@
+name: live-chat-app-jenserven
+type: web
+buildCommand: npm install
+startCommand: npm start
+staticPublishPath: public

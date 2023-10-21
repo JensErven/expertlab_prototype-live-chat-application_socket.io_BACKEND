@@ -98,6 +98,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("Server is listening on :3001");
+const port = process.env.PORT || 3001; // Use the provided PORT or a default port
+
+server.listen(port, () => {
+  console.log(`server is listening on port ${port}`);
 });
