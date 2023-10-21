@@ -1,0 +1,13 @@
+{
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "systeminformation": "^5.21.11",
+    "uuid": "^9.0.1",
+    "ws": "^8.14.2"
+  },
+  "scripts": {
+    "start": "nodemon ./index.js"
+  }
+}
