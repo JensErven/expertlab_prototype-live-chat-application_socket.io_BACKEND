@@ -21,6 +21,9 @@ const io = new Server(server, {
 const users = {};
 const chatHistory = {};
 
+// rooms
+const chatRooms = {};
+
 // Function to check if a username is available
 function isUsernameAvailable(username) {
   for (const socketId in users) {
@@ -38,6 +41,7 @@ io.on("connection", (socket) => {
     if (isUsernameAvailable(username)) {
       users[socket.id] = username;
       io.emit("userList", Object.values(users));
+      io.emit("chatRoomList", Object.values(chatRooms));
       // Send a success response to the client
       socket.emit("registrationResponse", { success: true });
     } else {
@@ -94,9 +98,23 @@ io.on("connection", (socket) => {
       });
 
       // Emit the message to the sender and receiver
-      socket
-        .to(senderSocket && receiverSocket)
-        .emit("message", { sender, receiver, message });
+      socket.to(receiverSocket).emit("message", { sender, receiver, message });
+    }
+  });
+
+  // rooms features
+  // Create a new chat room
+  socket.on("createRoom", (roomName) => {
+    chatRooms[roomName] = { users: {}, roomName };
+
+    io.emit("chatRoomList", Object.values(chatRooms));
+  });
+
+  // Join a chat room
+  socket.on("joinRoom", (roomName) => {
+    if (chatRooms[roomName]) {
+      chatRooms[roomName].users[socket.id] = users[socket.id];
+      // You can also send a response to the client to acknowledge the room join.
     }
   });
 });
