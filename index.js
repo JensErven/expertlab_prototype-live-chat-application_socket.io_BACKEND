@@ -10,7 +10,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Specify the allowed origins for your WebSocket connections
+    origin:
+      "https://expertlab-prototype-live-chat-application-socket-io-frontend.vercel.app/", // Specify the allowed origins for your WebSocket connections
     methods: ["GET", "POST"],
   },
 });
