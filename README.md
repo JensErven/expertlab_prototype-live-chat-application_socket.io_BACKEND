@@ -4,4 +4,5 @@ This is the backend of the live chat application using socket.io package on top 
 START THE BACKEND GUIDELINE:
 
 npm install
+
 npm run dev
