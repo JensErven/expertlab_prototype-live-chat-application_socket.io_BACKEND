@@ -23,6 +23,7 @@ const chatHistory = {};
 
 // rooms
 const chatRooms = {};
+const chatRoomHistory = {};
 
 // Function to check if a username is available
 function isUsernameAvailable(username) {
@@ -55,8 +56,18 @@ io.on("connection", (socket) => {
 
   // Handle disconnection
   socket.on("disconnect", () => {
+    // Remove the user from all chat rooms
+    for (const roomName in chatRooms) {
+      if (chatRooms[roomName].users[socket.id]) {
+        delete chatRooms[roomName].users[socket.id];
+      }
+    }
     delete users[socket.id];
+    // Emit the updated user list
     io.emit("userList", Object.values(users));
+
+    // Emit the updated chat room list
+    io.emit("chatRoomList", Object.values(chatRooms));
   });
 
   // ... other event handlers for chat messages
@@ -76,6 +87,31 @@ io.on("connection", (socket) => {
 
     socket.emit("chatHistory", { sender, receiver, history: combinedHistory });
   });
+
+  // not finished yet
+  // socket.on("getChatRoomHistory", (roomName) => {
+  //   const roomHistory = chatRoomHistory[roomName] || [];
+  //   socket.emit("chatRoomHistory", { roomName, history: roomHistory });
+  // });
+
+  // not finished yet
+  // socket.on("roomMessage", ({ receiver, sender, message }) => {
+  //   const room = chatRooms[receiver];
+  //   if (room) {
+  //     // Iterate through the users in the chat room
+  //     for (const socketId in room.users) {
+  //       io.to(socketId).emit("roomMessage", {
+  //         sender,
+  //         receiver: receiver,
+  //         message,
+  //       });
+  //     }
+  //     // Save the message to the chat room history
+  //     const roomHistory = chatRoomHistory[roomName] || [];
+  //     roomHistory.push({ sender, message, timestamp: new Date() });
+  //     chatRoomHistory[roomName] = roomHistory;
+  //   }
+  // });
 
   socket.on("message", ({ sender, receiver, message }) => {
     const senderSocket = Object.keys(users).find(
@@ -105,17 +141,32 @@ io.on("connection", (socket) => {
   // rooms features
   // Create a new chat room
   socket.on("createRoom", (roomName) => {
-    chatRooms[roomName] = { users: {}, roomName };
-
-    io.emit("chatRoomList", Object.values(chatRooms));
+    // Check if the room already exists
+    if (chatRooms[roomName]) {
+      socket.emit(
+        "createRoomError",
+        "A room with the same name already exists."
+      );
+    } else {
+      chatRooms[roomName] = { users: {}, roomName };
+      io.emit("chatRoomList", Object.values(chatRooms));
+    }
   });
 
   // Join a chat room
   socket.on("joinRoom", (roomName) => {
     if (chatRooms[roomName]) {
       chatRooms[roomName].users[socket.id] = users[socket.id];
-      // You can also send a response to the client to acknowledge the room join.
-    }
+      // Send an acknowledgment to the client
+      io.emit("chatRoomList", Object.values(chatRooms));
+    } else return;
+  });
+
+  socket.on("leaveRoom", (roomName) => {
+    if (chatRooms[roomName]) {
+      delete chatRooms[roomName].users[socket.id];
+      io.emit("chatRoomList", Object.values(chatRooms));
+    } else return;
   });
 });
 
